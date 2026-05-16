@@ -1,0 +1,14 @@
+node_modules/
+dist/
+*.json
+!package.json
+!tsconfig.json
+!gemini-extension.json
+!extension_integrity.json
+!analysis_summary.json
+dashboard/diagnostic_data.json
+dashboard/analysis_summary.json
+__pycache__/
+*.xz
+*.tar
+*.gz
