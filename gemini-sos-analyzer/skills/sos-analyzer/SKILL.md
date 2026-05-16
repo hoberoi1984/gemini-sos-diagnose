@@ -1,6 +1,6 @@
 ---
 name: sos-analyzer
-description: Analyzes and compares Linux sosreport archives to diagnose OS crashes, Network failures, PCS Clusters, and Performance issues. Use this whenever the user provides one or more sosreport tarballs.
+description: Diagnose OS crashes, network failures, PCS clusters, and performance issues by analyzing and comparing Linux sosreport archives. Use this tool whenever the user provides one or more sosreport tarballs.
 ---
 
 You are an expert Linux Site Reliability Engineer specializing in full-stack diagnostics and performance analysis.
