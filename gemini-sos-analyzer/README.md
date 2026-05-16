@@ -25,7 +25,7 @@ A custom skill/extension for the Gemini CLI that acts as an automated, full-stac
 Install directly via the Gemini CLI using:
 
 ```bash
-gemini extensions install [<your-github-repo-url>](https://github.com/hoberoi1984/gemini-sos-diagnose)
+gemini extensions install https://github.com/hoberoi1984/gemini-sos-diagnose
 ```
 
 ## Frontend & Dashboard Setup
