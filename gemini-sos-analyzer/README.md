@@ -28,6 +28,25 @@ Install directly via the Gemini CLI using:
 gemini extensions install <your-github-repo-url>
 ```
 
+## Frontend & Dashboard Setup
+The extension includes a Vite + React dashboard for visualizing diagnostic data. To run it locally:
+
+1. **Navigate to the dashboard directory**:
+   ```bash
+   cd gemini-sos-analyzer/dashboard
+   ```
+2. **Install dependencies**:
+   ```bash
+   npm install
+   ```
+3. **Start the development server**:
+   ```bash
+   npm run dev
+   ```
+4. **Access the UI**: Open [http://localhost:5173](http://localhost:5173) in your browser.
+
 ## Usage
 Once installed, simply provide a path to a sosreport:
 > "gemini refer the sosreport and diagnose kernel: CPU15: Core temperature above threshold"
+
+After Gemini completes the analysis, the dashboard will automatically refresh with the latest Root Cause Analysis and log evidence.
