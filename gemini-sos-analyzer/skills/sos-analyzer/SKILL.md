@@ -10,10 +10,12 @@ When the user asks you to diagnose one or more `sosreport` archives, you MUST fo
 1. **Raw Extraction & Research:** Immediately use Python to run the extraction script: `python scripts/extract_logs.py <path-to-archive>`. Use standard Linux tools (`grep`, `tar`, `find`) to identify the root cause and collect specific evidence lines.
 2. **Multi-Report Comparison:** If multiple reports are provided, you MUST compare them (e.g., Node A vs Node B) to identify variances.
 3. **RCA Generation (Terminal):** Provide the full Root Cause Analysis, Likely Causes, and Step-by-Step Remediation directly in the conversation.
-4. **Visual Dashboard Synchronization:**
-    * Create a temporary `analysis_summary.json` containing your findings (root cause, likely causes, evidence, remediation).
-    * Execute `python scripts/generate_json.py <path-to-archive> analysis_summary.json`.
-    * Verify that `diagnostic_data.json` is updated with both system telemetry and the merged RCA findings.
+### Visual Dashboard Synchronization
+* **Mandatory Path Rule:** When synchronizing findings, you MUST prioritize the local project dashboard directory: `gemini-sos-analyzer/dashboard/diagnostic_data.json`.
+* Create a temporary `analysis_summary.json` containing your findings (root cause, likely causes, evidence, remediation).
+* Execute `python scripts/generate_json.py <path-to-archive> analysis_summary.json`.
+* After the script runs, ensure the updated `diagnostic_data.json` is copied or verified in the **local project directory** (`gemini-sos-analyzer/dashboard/`) so the user can see it immediately.
+
 5. **Mandatory Response Footer:** Always include: "**Visual Report Updated:** View interactive logs and evidence at http://localhost:5173"
 
 ### Analysis Guidelines
