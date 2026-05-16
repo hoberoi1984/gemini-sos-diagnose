@@ -144,16 +144,29 @@ def main():
         with open(sys.argv[2], 'r') as f:
             data['analysis'] = json.load(f)
 
-    # Output to the React app's directory
-    # We prioritize the 'dashboard' folder within the extension, but fall back to CWD
+    # Resolve output path dynamically based on workspace type
     script_dir = os.path.dirname(os.path.abspath(__file__))
-    dashboard_path = os.path.abspath(os.path.join(script_dir, "..", "..", "..", "dashboard", "diagnostic_data.json"))
     
-    if os.path.exists(os.path.dirname(dashboard_path)):
-        output_path = dashboard_path
+    # Path 1: Relative location inside a local development clone
+    dev_dashboard_path = os.path.abspath(os.path.join(script_dir, "..", "..", "..", "dashboard", "diagnostic_data.json"))
+    
+    # Path 2: Global Gemini extension installation folder in user home directory
+    home_dir = os.path.expanduser("~")
+    global_dashboard_path = os.path.abspath(os.path.join(
+        home_dir, 
+        ".gemini", "extensions", "gemini-sos-analyzer", 
+        "gemini-sos-analyzer", "dashboard", "diagnostic_data.json"
+    ))
+
+    # Priority Evaluation
+    if os.path.exists(os.path.dirname(dev_dashboard_path)):
+        output_path = dev_dashboard_path
+    elif os.path.exists(os.path.dirname(global_dashboard_path)):
+        output_path = global_dashboard_path
     else:
         output_path = "diagnostic_data.json"
 
+    # Safely commit the telemetry JSON data
     with open(output_path, 'w') as f:
         json.dump(data, f, indent=2)
     
