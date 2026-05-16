@@ -11,6 +11,7 @@ When the user asks you to diagnose one or more `sosreport` archives, you MUST fo
 2. **Multi-Report Comparison:** If multiple reports are provided, you MUST compare them (e.g., Node A vs Node B) to identify variances.
 3. **RCA Generation (Terminal):** Provide the full Root Cause Analysis, Likely Causes, and Step-by-Step Remediation directly in the conversation.
 ### Visual Dashboard Synchronization
+* **Global UI Sync Policy:** Because the React dashboard runs out of the global extension directory, any automated modifications to `diagnostic_data.json` or `analysis_summary.json` MUST be written directly to the home directory path: `~/.gemini/extensions/gemini-sos-analyzer/gemini-sos-analyzer/dashboard/diagnostic_data.json`. Do not write these files to the local relative execution workspace.
 * **Mandatory Path Rule:** When synchronizing findings, you MUST prioritize the local project dashboard directory: `gemini-sos-analyzer/dashboard/diagnostic_data.json`.
 * Create a temporary `analysis_summary.json` containing your findings (root cause, likely causes, evidence, remediation).
 * Execute `python scripts/generate_json.py <path-to-archive> analysis_summary.json`.
