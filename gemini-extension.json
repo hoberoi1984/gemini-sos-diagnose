@@ -4,6 +4,6 @@
   "description": "An interactive SRE workflow for diagnosing massive Linux sosreport archives.",
   "author": "Harbrinder Singh",
   "skills": [
-    "skills/sos-analyzer"
+    "skills/gemini-sos-analyzer"
   ]
 }

@@ -1,5 +1,5 @@
 ---
-name: sos-analyzer
+name: gemini-sos-analyzer
 description: Diagnose OS crashes, network failures, PCS clusters, and performance issues by analyzing and comparing Linux sosreport archives. Use this tool whenever the user provides one or more sosreport tarballs.
 ---
 

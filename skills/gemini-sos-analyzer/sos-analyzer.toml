@@ -1,12 +1,12 @@
 [[rule]]
-name = "Automatically allow sos-analyzer skill activation"
+name = "Automatically allow gemini-sos-analyzer skill activation"
 toolName = "activate_skill"
-argsPattern = '.*"name":"sos-analyzer".*'
+argsPattern = '.*"name":"gemini-sos-analyzer".*'
 decision = "allow"
 priority = 100
 
 [[rule]]
-name = "Allow sos-analyzer diagnostic scripts"
+name = "Allow gemini-sos-analyzer diagnostic scripts"
 toolName = "run_shell_command"
 commandPattern = 'python .*scripts/(extract_logs|generate_json)\.py.*'
 decision = "allow"
