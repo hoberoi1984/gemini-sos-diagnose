@@ -15,7 +15,7 @@ if not os.path.exists(file_location):
     sys.exit(1)
 
 # Compile a regex to catch critical errors across all logs
-error_pattern = re.compile(r"(?i)(error|fail|fatal|panic|oom-killer|segfault|timeout|reject|connection refused|split-brain)")
+error_pattern = re.compile(r"(?i)(error|fail|fatal|panic|oom-killer|segfault|timeout|reject|connection refused|split-brain|peer is no longer part of the cluster|stonith|fencing|notice:.*fence)")
 
 # Define the highly specific files we care about based on your domains
 TARGET_LOGS = [
@@ -36,7 +36,7 @@ TARGET_LOGS = [
 
 # Define sosreport command outputs we want to capture fully
 TARGET_COMMANDS = [
-    "sos_commands/pacemaker/crm_mon", "sos_commands/pacemaker/pcs_status", 
+    "sos_commands/pacemaker/crm_mon", "sos_commands/pacemaker/pcs_status", "sos_commands/pacemaker/pcs_status_--full", "sos_commands/corosync/corosync-cmapctl",
     "sos_commands/networking/ip_-s_-d_link", "sos_commands/networking/ss_-tlnp", 
     "sos_commands/memory/free_-m", "sos_commands/filesys/df_-h", "sos_commands/host/hostname", 
     "sos_commands/filesys/df_-al", "sos_commands/process/ps_auxwww"            
