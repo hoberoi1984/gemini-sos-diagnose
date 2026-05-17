@@ -10,6 +10,11 @@ When the user asks you to diagnose one or more `sosreport` archives, you MUST fo
 1. **Raw Extraction & Research:** Immediately use Python to run the extraction script: `python scripts/extract_logs.py <path-to-archive>`. Use standard Linux tools (`grep`, `tar`, `find`) to identify the root cause and collect specific evidence lines.
 2. **Multi-Report Comparison:** If multiple reports are provided, you MUST compare them (e.g., Node A vs Node B) to identify variances.
 3. **RCA Generation (Terminal):** Provide the full Root Cause Analysis, Likely Causes, and Step-by-Step Remediation directly in the conversation.
+
+### Token Efficiency & Context Management
+* **Avoid Terminal Flooding:** When running extraction scripts (e.g. `extract_logs.py`) or extracting large log files (`tar -xOf`), **NEVER** dump the entire output into the terminal if it is expected to be large. 
+* **File Redirection:** Always redirect large outputs to a temporary file (e.g., `> output.txt`) and then use specific tools like `grep_search` or targeted `read_file` with start/end lines to analyze the data. This keeps the session history lean and prevents high token consumption.
+
 ### Visual Dashboard Synchronization
 * **Global UI Sync Policy:** Because the React dashboard runs out of the global extension directory, any automated modifications to `diagnostic_data.json` or `analysis_summary.json` MUST be written directly to the home directory path: `~/.gemini/extensions/gemini-sos-analyzer/gemini-sos-analyzer/dashboard/diagnostic_data.json`. Do not write these files to the local relative execution workspace.
 * **Mandatory Path Rule:** When synchronizing findings, you MUST prioritize the local project dashboard directory: `gemini-sos-analyzer/dashboard/diagnostic_data.json`.
