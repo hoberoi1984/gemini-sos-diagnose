@@ -21,7 +21,7 @@ An expert diagnostic extension for Gemini CLI designed to analyze Linux `sosrepo
 This extension is typically installed via the Gemini CLI extension manager.
 
 ```bash
-gemini extension install gemini-sos-analyzer
+gemini extension install https://github.com/hoberoi1984/gemini-sos-diagnose
 ```
 
 ## Usage
