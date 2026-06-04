@@ -1,96 +1,91 @@
 #!/usr/bin/env python3
-import tarfile
-import sys
-import os
-import re
+import tarfile, sys, os, re, io
+from collections import deque
 
-if len(sys.argv) < 2:
-    print("Error: Please provide the path to the sosreport tarball.")
+if len(sys.argv) < 2 or not os.path.exists(sys.argv[1]):
+    print("Error: Valid path to sosreport required.")
     sys.exit(1)
 
-file_location = sys.argv[1]
+path = sys.argv[1]
+err_pat = re.compile(
+    r"(?i)(error|fail|fatal|panic|oom-killer|segfault|timeout|"
+    r"split-brain|stonith|fencing)"
+)
 
-if not os.path.exists(file_location):
-    print(f"Error: File {file_location} not found.")
-    sys.exit(1)
-
-# Compile a regex to catch critical errors across all logs
-error_pattern = re.compile(r"(?i)(error|fail|fatal|panic|oom-killer|segfault|timeout|reject|connection refused|split-brain|peer is no longer part of the cluster|stonith|fencing|notice:.*fence)")
-
-# Define the highly specific files we care about based on your domains
 TARGET_LOGS = [
-    # General OS
-    "var/log/messages", "var/log/syslog", "var/log/dmesg",          
-    # Mail & Cluster (Your specific domains)
-    "var/log/maillog", "var/log/mail.log", "var/log/exim",          
-    "var/log/pacemaker/pacemaker.log", "var/log/cluster/corosync.log",
-    
-    # --- ADDED BROAD APP SUPPORT ---
-    # Web Servers
-    "var/log/nginx/error.log", "var/log/httpd/error_log", "var/log/apache2/error.log",
-    # Databases
-    "var/log/mysql/error.log", "var/log/postgresql/postgresql",
-    # Containers
-    "var/log/containers/", "var/log/docker/"
+    "var/log/messages", "var/log/syslog", "var/log/dmesg",
+    "var/log/maillog", "var/log/mail.log",
+    "var/log/pacemaker/pacemaker.log",
+    "var/log/cluster/corosync.log"
 ]
 
-# Define sosreport command outputs we want to capture fully
-TARGET_COMMANDS = [
-    "sos_commands/pacemaker/crm_mon", "sos_commands/pacemaker/pcs_status", "sos_commands/pacemaker/pcs_status_--full", "sos_commands/corosync/corosync-cmapctl",
-    "sos_commands/networking/ip_-s_-d_link", "sos_commands/networking/ss_-tlnp", 
-    "sos_commands/memory/free_-m", "sos_commands/filesys/df_-h", "sos_commands/host/hostname", 
-    "sos_commands/filesys/df_-al", "sos_commands/process/ps_auxwww"            
+TARGET_CMDS = [
+    "crm_mon", "pcs_status", "free_-m", "df_-h", "hostname",
+    "df_-al", "ps_auxwww"
 ]
 
-def process_file(member_name, file_obj):
-    """Reads a file, extracts errors, and grabs the tail context."""
+def process_stream(name, f):
     try:
-        content = file_obj.read().decode('utf-8', errors='ignore').splitlines()
+        text_f = io.TextIOWrapper(f, encoding='utf-8', errors='ignore')
     except Exception:
         return ""
-
-    output = f"\n=== FILE: {member_name} ===\n"
     
-    # For small command outputs, return the whole thing (up to 100 lines)
-    if any(cmd in member_name for cmd in TARGET_COMMANDS):
-        output += "[COMMAND OUTPUT]\n"
-        output += "\n".join(content[-100:])
-        return output
+    out = f"\n=== FILE: {name} ===\n"
+    if any(c in name for c in TARGET_CMDS):
+        hdr = next(text_f, "").rstrip()
+        tail = deque(text_f, 100)
+        lines = [l.rstrip() for l in tail]
+        out += "[COMMAND OUTPUT]\n"
+        if hdr:
+            out += hdr + "\n"
+        out += "\n".join(lines)
+        return out
 
-    # For large logs, use Smart Grepping + Tail Context
-    errors_found = [line for line in content if error_pattern.search(line)]
-    
-    if errors_found:
-        output += f"[CRITICAL ERRORS FOUND ({len(errors_found)} lines)]\n"
-        # Only keep the last 30 errors to prevent flooding the context window
-        output += "\n".join(errors_found[-30:]) + "\n\n"
-    else:
-        output += "[NO CRITICAL ERRORS FOUND]\n\n"
+    errs, tail, counts = deque(maxlen=30), deque(maxlen=50), {}
+    for line in text_f:
+        l = line.rstrip()
+        tail.append(l)
+        if err_pat.search(l):
+            errs.append(l)
+            norm = re.sub(
+                r'\b\d{2}:\d{2}:\d{2}\b|\[\d+\]|0x[0-9a-f]+',
+                '[SUB]', l
+            )
+            counts[norm] = counts.get(norm, 0) + 1
 
-    output += "[LAST 50 LINES OF LOG]\n"
-    output += "\n".join(content[-50:])
-    
-    return output
+    if errs:
+        total_matches = sum(counts.values())
+        out += f"[CRITICAL ERRORS FOUND ({total_matches} total)]\n"
+        spammers = sorted(
+            counts.items(), key=lambda x: x[1], reverse=True
+        )[:2]
+        for k, v in spammers:
+            if v > 5:
+                out += f"  - Repeated {v}x: {k[:80]}...\n"
+        out += f"[LAST {len(errs)} RECENT ERRORS]\n" + "\n".join(errs) + "\n\n"
+    return out + f"[LAST {len(tail)} LINES OF LOG]\n" + "\n".join(tail)
 
-# Main extraction routine
-log_summary = ""
-try:
-    with tarfile.open(file_location, "r:*") as tar:
-        for member in tar.getmembers():
-            if not member.isfile():
-                continue
-                
-            # Check if the file is one of our targets
-            is_target_log = any(member.name.endswith(log) for log in TARGET_LOGS)
-            is_target_cmd = any(cmd in member.name for cmd in TARGET_COMMANDS)
-            
-            if is_target_log or is_target_cmd:
-                f = tar.extractfile(member)
-                if f:
-                    log_summary += process_file(member.name, f)
-    
-    print("--- CRITICAL LOGS & CLUSTER STATES EXTRACTED ---")
-    print(log_summary)
+summary = ""
+if os.path.isdir(path):
+    for r, _, files in os.walk(path):
+        for fl in files:
+            p = os.path.join(r, fl)
+            rel = os.path.relpath(p, path).replace('\\', '/')
+            is_log = any(rel.endswith(lg) for lg in TARGET_LOGS)
+            is_cmd = any(c in rel for c in TARGET_CMDS)
+            if (is_log or is_cmd) and os.path.isfile(p):
+                if not os.path.islink(p):
+                    with open(p, 'rb') as f:
+                        summary += process_stream(rel, f)
+else:
+    with tarfile.open(path, "r:*") as tar:
+        for m in tar.getmembers():
+            if m.isfile() and not m.issym():
+                is_log = any(m.name.endswith(lg) for lg in TARGET_LOGS)
+                is_cmd = any(c in m.name for c in TARGET_CMDS)
+                if is_log or is_cmd:
+                    f = tar.extractfile(m)
+                    if f:
+                        summary += process_stream(m.name, f)
 
-except Exception as e:
-    print(f"Extraction failed: {str(e)}")
+print("--- CRITICAL LOGS & CLUSTER STATES EXTRACTED ---\n" + summary)
