@@ -36,6 +36,12 @@ Do not proceed to the extraction step until the user has provided this context o
 * **Web Search Prohibition:** When diagnosing an active incident, do NOT perform speculative external web searches (e.g., using `google_web_search`).
 * **Prioritize Local Context:** You MUST rely on your deep, pre-existing SRE knowledge, the actual logs, configurations, and commands extracted from the `sosreport` itself, and surrounding system files. External searches should only be used as a last resort when encountering completely unknown proprietary errors, and never for standard Linux logging, logrotation, systemd, or process dynamics.	  
 ### Critical Sosreport File Quirks (Do Not Hallucinate)
+* **Windows MAX_PATH Bypass (In-Memory Extraction):** `sosreport` archives often contain deeply nested file paths that
+     exceed the Windows `MAX_PATH` limit (260 characters), causing `tarfile.extractall()` and other extraction tools to fail
+     with `FileNotFoundError` (e.g., inside `sos_commands/subscription_manager/`). To completely bypass this OS limitation,
+     **never extract the archive to disk on Windows**. Instead, perform the entire analysis natively in-memory by streaming
+     the file contents directly from the compressed archive using Python (e.g., `python -c "import tarfile; t =
+     tarfile.open('archive.tar.xz', 'r:xz'); lines = t.extractfile('path/to/target').readlines(); ..."`).
 `sosreport` names file outputs based on the exact native flags executed. Look for these exact paths:
 * **Disk Space:** Look for `sos_commands/filesys/df_-al` or `sos_commands/filesys/df_-h`.
 * **Mounted Filesystems:** Look for `sos_commands/filesys/mount_-l`.
