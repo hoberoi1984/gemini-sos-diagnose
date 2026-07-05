@@ -27,12 +27,11 @@ Do not proceed to the extraction step until the user has provided this context o
 * **Authentic Evidence:** When citing command outputs (e.g., `ps`, `free`, `ip`, `pcs`), you MUST include the original system headers for proper correlation and technical authenticity.
 * **Correlated Diagnostics:** Focus on the `[CRITICAL ERRORS FOUND]` blocks. Correlate application failures (e.g., Java OOM, SSSD LDAP failures) with system metrics (e.g., `free -m`, `slabinfo`, `dmesg`).
 * **Surgical Precision:** Filter logs to show only the "smoking gun" evidence relevant to the identified root cause. 
-### Execution Environment Mandate (Pure Python & Git Bash POSIX)
-* **Python First Mandate:** Since PowerShell command behavior and aliases can vary wildly across environments,       
-      **NEVER** attempt to write or execute native PowerShell commands (like `Get-ChildItem` or `Get-Item`).
-* To check file existence, verify files, or perform directory inspections, **ALWAYS** use standard Python script blocks or the pre-defined Python scripts inside the skill.
-* If running local shell executions via Git Bash (MINGW64), you MUST restrict yourself to simple, cross-platform POSIX commands (`find`, `grep`, `cat`, `sort`) with absolute safety, avoiding Windows paths/commands entirely.       
-* **No PowerShell Chaining:** Do not use PowerShell chaining or shell constructs. Keep all orchestration and logic inside our pre-defined Python scripts.
+### Execution Environment Mandate (Pure Python Natively In-Memory)
+* **Python First Mandate:** Since PowerShell command behavior and aliases can vary wildly across environments, **NEVER** attempt to write or execute native PowerShell commands.
+* **In-Memory Execution:** To execute pure Python natively in memory, use `python -c "..."` inside `run_shell_command`. This is the preferred strategy for analyzing data, checking file existence, verifying files, or performing directory inspections. Do not write temporary scripts to disk.
+* **No Shell Piping/Chaining:** Keep all orchestration, file parsing, and logic inside the in-memory Python scripts. Avoid relying on shell-specific piping or POSIX commands. Use the pre-defined Python scripts inside the skill where applicable.
+
 ### Strict Web Search Restrictions (Mandatory Guardrail)
 * **Web Search Prohibition:** When diagnosing an active incident, do NOT perform speculative external web searches (e.g., using `google_web_search`).
 * **Prioritize Local Context:** You MUST rely on your deep, pre-existing SRE knowledge, the actual logs, configurations, and commands extracted from the `sosreport` itself, and surrounding system files. External searches should only be used as a last resort when encountering completely unknown proprietary errors, and never for standard Linux logging, logrotation, systemd, or process dynamics.	  
