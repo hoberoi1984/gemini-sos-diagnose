@@ -10,7 +10,7 @@ When the user asks you to diagnose one or more `sosreport` archives or folders, 
 - The timeline of the incident (e.g., when it started/stopped).
 - Specific symptoms, actions performed, or components of interest.
 Do not proceed to the extraction step until the user has provided this context or explicitly instructed you to proceed without it.
-2. **Raw Extraction & Research:** After context is gathered, use Python to run the extraction script: `python scripts/extract_logs.py <path-to-archive-or-dir>`. Use standard Linux tools (`grep`, `tar`, `find`) guided by the user's context to identify the root cause and collect specific evidence lines.
+2. **Raw Extraction & Research:** After context is gathered, use Python to run the extraction script: `python scripts/extract_logs.py <path-to-archive-or-dir> [--focus <all|memory|cluster|network|disk>]`. Use standard Linux tools (`grep`, `tar`, `find`) guided by the user's context to identify the root cause and collect specific evidence lines.
 3. **Multi-Report Comparison:** If multiple reports are provided, you MUST compare them (e.g., Node A vs Node B) to identify variances.
 4. **RCA Generation (Terminal):** Provide the full Root Cause Analysis, Likely Causes, and Step-by-Step Remediation directly in the conversation.
 ### Token Efficiency & Context Management
