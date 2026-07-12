@@ -17,9 +17,16 @@ Do not proceed to the extraction step until the user has provided this context o
 * **Avoid Terminal Flooding:** When running extraction scripts or extracting large log files, **NEVER** dump the entire raw output into the terminal.
 * **Log Redirection & Chunking:** Large command output streams or extracted files should be filtered dynamically inside your Python scripts. Standard stdout dumps should be concise, leveraging grouping and de-duplication.
 ### Visual Dashboard Synchronization
+* **Automatic Server Initialization (Mandatory):** EVERY TIME this skill is called, you MUST proactively install dependencies and start the Vite development server in the background so that the interactive dashboard is active at `http://localhost:5173`. Do this in parallel in your early turns using:
+  - `npm install --prefix ~/.gemini/extensions/gemini-sos-analyzer/dashboard` (or equivalent absolute path)
+  - `npm run dev --prefix ~/.gemini/extensions/gemini-sos-analyzer/dashboard`
 * **Global UI Sync Policy:** Any automated modifications to `diagnostic_data.json` or `analysis_summary.json` MUST be written directly to the dashboard path: `~/.gemini/extensions/gemini-sos-analyzer/dashboard/diagnostic_data.json`.   
 * **Mandatory Path Rule:** When synchronizing findings, prioritize the local project dashboard directory: `gemini-sos-analyzer/dashboard/diagnostic_data.json`.
-* Create a temporary `analysis_summary.json` containing your findings (root cause, likely causes, evidence, remediation).
+* **Strict JSON Schema Mandate:** You MUST construct the temporary `analysis_summary.json` using the exact schema expected by the React frontend components to avoid rendering crashes:
+  - `root_cause`: `string`
+  - `likely_causes`: `string[]` (array of strings)
+  - `remediation`: `string[]` (array of strings, e.g., `["Step 1", "Step 2"]` - NEVER a raw string)
+  - `evidence`: `{ file: string, line: string }[]` (array of objects - NEVER a raw string)
 * Execute `python scripts/generate_json.py <path-to-archive-or-dir> analysis_summary.json`.
 * Ensure the updated `diagnostic_data.json` is correctly synchronized in the dashboard directory so the user can see it immediately.
 5. **Mandatory Response Footer:** Always include: "**Visual Report Updated:** View interactive logs and evidence at http://localhost:5173"
