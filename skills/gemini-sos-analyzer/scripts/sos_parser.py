@@ -162,10 +162,7 @@ class SOSParser:
                 stream.close()
 
         # Logs: Diagnostic streaming
-        elif any(rel_path.endswith(l) for l in [
-            "var/log/messages", "var.log.messages.tailed", "var/log/dmesg", 
-            "var/log/cluster/corosync.log", "var/log/pacemaker/pacemaker.log"
-        ]):
+        elif "var/log/" in rel_path and not rel_path.endswith(".gz") and not rel_path.endswith(".xz") and not rel_path.endswith(".1"):
             stream = self._get_file_stream(tar, file_ref)
             if stream:
                 name = rel_path.split("/")[-1]
