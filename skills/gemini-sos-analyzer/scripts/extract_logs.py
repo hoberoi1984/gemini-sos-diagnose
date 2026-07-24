@@ -82,6 +82,7 @@ def process_cmd(name, text_f):
                     if int(use_pct) >= 80 or mnt in ["/", "/var", "/tmp", "/boot"]: out += l.strip() + "\n"
                 except ValueError: out += l.strip() + "\n"
         return out
+    else:
         lines = [next(text_f, "").rstrip() for _ in range(50)]
         out += "\n".join(filter(None, lines)) + "\n"
         return out
@@ -122,6 +123,7 @@ if os.path.isdir(path):
                 if not os.path.islink(p):
                     with open(p, 'rb') as f:
                         summary += process_stream(rel, f)
+elif tarfile.is_tarfile(path):
     with tarfile.open(path, "r:*") as tar:
         for m in tar.getmembers():
             if m.isfile() and not m.issym():
