@@ -28,12 +28,17 @@ Do not proceed to the extraction step until the user has provided this context o
   - `remediation`: `string[]` (array of strings, e.g., `["Step 1", "Step 2"]` - NEVER a raw string)
   - `evidence`: `{ file: string, line: string }[]` (array of objects - NEVER a raw string)
 * Execute `python scripts/generate_json.py <path-to-archive-or-dir> analysis_summary.json`.
+* **CRITICAL:** NEVER attempt to write or mock the final `diagnostic_data.json` UI payload manually using shell commands. You MUST execute the `generate_json.py` script to serialize the data. Bypassing this script will generate an incomplete payload that crashes the React frontend and renders a blank page.
 * Ensure the updated `diagnostic_data.json` is correctly synchronized in the dashboard directory so the user can see it immediately.
 5. **Mandatory Response Footer:** Always include: "**Visual Report Updated:** View interactive logs and evidence at http://localhost:5173"
 ### Analysis Guidelines
+* **Avoid Premature Conclusions (No "Smoking Gun" Bias):** NEVER stop an investigation just because you found a single severe misconfiguration or error log (e.g., NFS timeouts). You MUST cross-reference and correlate these findings with historical performance metrics (like `sar`, `sysstat`, or `iostat` found in `/var/log/sa/`) to prove that the suspected bottleneck actually caused resource saturation (e.g., matching `iowait` spikes on a specific block device) during the incident timeline.
 * **Authentic Evidence:** When citing command outputs (e.g., `ps`, `free`, `ip`, `pcs`), you MUST include the original system headers for proper correlation and technical authenticity.
 * **Correlated Diagnostics:** Focus on the `[CRITICAL ERRORS FOUND]` blocks. Correlate application failures (e.g., Java OOM, SSSD LDAP failures) with system metrics (e.g., `free -m`, `slabinfo`, `dmesg`).
 * **Surgical Precision:** Filter logs to show only the "smoking gun" evidence relevant to the identified root cause. 
+* **Runtime Over Configuration:** ALWAYS prioritize runtime state found in `sos_commands/` (e.g., `sysctl -a`, `mount -l`) over static configurations in `/etc/` (e.g., `sysctl.conf`, `fstab`). System configurations often drift or fail to apply.
+* **Timestamp Alignment:** When correlating kernel events in `dmesg` (seconds since boot) with daemon logs in `/var/log/messages` (wall-clock time), you MUST verify the system uptime to calculate the accurate offset. Do not blindly guess log correlations.
+* **Truncation Awareness:** Heavy resource starvation often causes the `sosreport` collection to timeout. If a critical command output (like `ps` or LVM stats) is entirely empty or abruptly truncated, you must acknowledge this as a symptom of system lockup rather than assuming a "healthy" empty state. 
 ### Execution Environment Mandate (Pure Python Natively In-Memory)
 * **Python First Mandate:** Since PowerShell command behavior and aliases can vary wildly across environments, **NEVER** attempt to write or execute native PowerShell commands.
 * **In-Memory Execution:** To execute pure Python natively in memory, use `python -c "..."` inside `run_shell_command`. This is the preferred strategy for analyzing data, checking file existence, verifying files, or performing directory inspections. Do not write temporary scripts to disk.
