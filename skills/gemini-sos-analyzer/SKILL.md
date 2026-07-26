@@ -16,6 +16,8 @@ Do not proceed to the extraction step until the user has provided this context o
 ### Token Efficiency & Context Management
 * **Avoid Terminal Flooding:** When running extraction scripts or extracting large log files, **NEVER** dump the entire raw output into the terminal.
 * **Log Redirection & Chunking:** Large command output streams or extracted files should be filtered dynamically inside your Python scripts. Standard stdout dumps should be concise, leveraging grouping and de-duplication.
+* **Empty Log Filtering:** When parsing logs to generate the visual dashboard payload, you MUST ensure the python parser script strictly ignores log files that yield 0 relevant errors or critical patterns to avoid cluttering the frontend with empty views.
+* **High-Signal Regex Filtering:** When extracting errors from logs, avoid overly broad generic patterns (like `permission denied` or `error`) that pull in months-old irrelevant noise. Tailor your regex patterns in the parser to target high-signal, incident-specific signatures (e.g., `Timed Out`, `STONITH`, `hung`, `High CPU load`).
 ### Visual Dashboard Synchronization
 * **Automatic Server Initialization (Mandatory):** EVERY TIME this skill is called, you MUST proactively install dependencies and start the Vite development server in the background so that the interactive dashboard is active at `http://localhost:5173`. Do this in parallel in your early turns using:
   - `npm install --prefix ~/.gemini/extensions/gemini-sos-analyzer/dashboard` (or equivalent absolute path)

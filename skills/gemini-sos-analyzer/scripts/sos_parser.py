@@ -167,28 +167,20 @@ class SOSParser:
             if stream:
                 name = rel_path.split("/")[-1]
 
-                # Broad critical patterns consolidated from both versions
+                # High-signal patterns for cluster, IO, and resource failures
                 patterns = [
-                    r"failed to run tailer",
-                    r"permission denied",
+                    r"Result of monitor operation.*Timed Out",
+                    r"High CPU load detected",
+                    r"connect\(\) failed on local socket",
+                    r"Internal cluster locking initialisation failed",
+                    r"Falling back to local file-based locking",
+                    r"Volume Groups with the clustered attribute will be inaccessible",
+                    r"Scheduling Node.*for STONITH",
+                    r"Fence \(reboot\)",
                     r"nfs.*not responding",
-                    r"Preauthentication failed",
-                    r"Failed to initialize credentials",
-                    r"alloy.*level=error",
                     r"oom-killer",
-                    r"RegisterEC2Agent.*does not exist",
-                    r"CCPC.*exec-time=[3-9]\d{4}ms",
-                    r"terminated \(reboot\) by ue1pl-ccpc-app",
-                    r"rc=193",
-                    r"forbidden",
-                    r"certificate.*expired",
-                    r"certificate verify failed",
-                    r"failed to assign",
-                    r"Error retrieving metadata",
-                    r"Download failed",
                     r"timed out after \d+ms",
                     r"Timer expired",
-                    r"Processing failed start of vmfence",
                     r"unpack_rsc_op_failure",
                     r"check_migration_threshold",
                     r"status=Timed Out",
@@ -207,12 +199,13 @@ class SOSParser:
 
                 # Save evidence
                 evidence_list = list(evidence_lines)
-                self.data["logs"].append({
-                    "name": name,
-                    "content": "\n".join(evidence_list) if evidence_list else "No direct evidence found.",
-                    "error_count": error_count,
-                    "recent_errors": evidence_list[-20:] if evidence_list else []
-                })
+                if error_count > 0:
+                    self.data["logs"].append({
+                        "name": name,
+                        "content": "\n".join(evidence_list),
+                        "error_count": error_count,
+                        "recent_errors": evidence_list[-20:]
+                    })
                 stream.close()
 
 if __name__ == "__main__":
