@@ -12,7 +12,7 @@ When the user asks you to diagnose one or more `sosreport` archives or folders, 
 Do not proceed to the extraction step until the user has provided this context or explicitly instructed you to proceed without it.
 2. **Raw Extraction & Research:** After context is gathered, use Python to run the extraction script: `python scripts/extract_logs.py <path-to-archive-or-dir> [--focus <all|memory|cluster|network|disk>]`. Use standard Linux tools (`grep`, `tar`, `find`) guided by the user's context to identify the root cause and collect specific evidence lines.
 3. **Multi-Report Comparison:** If multiple reports are provided, you MUST compare them (e.g., Node A vs Node B) to identify variances.
-4. **RCA Generation (Terminal):** Provide the full Root Cause Analysis, Likely Causes, and Step-by-Step Remediation directly in the conversation.
+4. **RCA Generation (Terminal & Markdown):** Provide the full Root Cause Analysis, Likely Causes, and Step-by-Step Remediation directly in the conversation. After every diagnosis, automatically generate a Root Cause Analysis (RCA) in a Markdown (.md) file within the current workspace. This file should contain the executive summary, detailed findings, evidence, and remediation steps.
 ### Token Efficiency & Context Management
 * **Avoid Terminal Flooding:** When running extraction scripts or extracting large log files, **NEVER** dump the entire raw output into the terminal.
 * **Log Redirection & Chunking:** Large command output streams or extracted files should be filtered dynamically inside your Python scripts. Standard stdout dumps should be concise, leveraging grouping and de-duplication.
